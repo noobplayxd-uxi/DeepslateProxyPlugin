@@ -1,0 +1,4 @@
+name: DeepslateProxyPlugin
+version: 1.0.0
+main: com.deepslate.proxy.DeepslateProxyPlugin
+author: YourName
