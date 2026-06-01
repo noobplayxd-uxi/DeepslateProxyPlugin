@@ -5,12 +5,7 @@ plugins {
 group = 'com.deepslate'
 version = '1.0.0'
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    // Use the local BungeeCord.jar (contains the API classes we need)
     compileOnly files('libs/BungeeCord.jar')
 }
 
