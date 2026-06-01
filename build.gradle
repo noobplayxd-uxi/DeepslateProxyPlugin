@@ -5,6 +5,18 @@ plugins {
 group = 'com.deepslate'
 version = '1.0.0'
 
+// Download the latest BungeeCord before compiling
+def bungeeUrl = 'https://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar'
+
+task downloadBungee {
+    doLast {
+        mkdir 'libs'
+        ant.get(src: bungeeUrl, dest: 'libs/BungeeCord.jar', skipexisting: false)
+    }
+}
+
+compileJava.dependsOn downloadBungee
+
 dependencies {
     compileOnly files('libs/BungeeCord.jar')
 }
