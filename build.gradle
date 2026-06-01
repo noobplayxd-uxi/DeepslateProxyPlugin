@@ -8,11 +8,13 @@ version = '1.0.0'
 repositories {
     mavenCentral()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-    maven { url 'https://repo.md-5.net/content/groups/public/' }
+    // The correct BungeeCord snapshots repository
+    maven { url 'https://repo.md-5.net/content/repositories/snapshots/' }
 }
 
 dependencies {
-    compileOnly 'net.md-5:bungeecord-api:1.12-SNAPSHOT'
+    // Use the exact artifact version that exists
+    compileOnly 'net.md-5:bungeecord-api:1.12-R0.1-SNAPSHOT'
 }
 
 jar {
