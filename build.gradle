@@ -7,15 +7,10 @@ version = '1.0.0'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-repositories {
-    mavenCentral()
-    maven { url 'https://repo.viaversion.com' }
-}
-
 dependencies {
-    compileOnly 'net.md-5:bungeecord-api:1.12-R0.1-SNAPSHOT'
-    compileOnly 'com.viaversion:viaversion-api:4.9.3'        // check your ViaVersion jar version
-    compileOnly 'com.viaversion:viabackwards-api:4.1.1'       // check your ViaBackwards jar version
+    compileOnly files('libs/BungeeCord.jar')
+    compileOnly files('libs/ViaVersion.jar')
+    compileOnly files('libs/ViaBackwards.jar')
 }
 
 jar {
