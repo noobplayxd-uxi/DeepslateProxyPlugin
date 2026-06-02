@@ -7,16 +7,42 @@ version = '1.0.0'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-repositories {
-    mavenCentral()
-    maven { url 'https://repo.md-5.net/content/repositories/snapshots/' }
-    maven { url 'https://repo.viaversion.com' }
+// --- Download the three proxy JARs from official sources ---
+def bungeeUrl   = 'https://ci.md-5.net/job/BungeeCord/1499/artifact/bootstrap/target/BungeeCord.jar'
+def viaVUrl     = 'https://github.com/ViaVersion/ViaVersion/releases/download/4.9.3/ViaVersion-4.9.3.jar'
+def viaBackUrl  = 'https://github.com/ViaVersion/ViaBackwards/releases/download/4.1.1/ViaBackwards-4.1.1.jar'
+
+task downloadBungee {
+    doLast {
+        def dest = file('libs/BungeeCord.jar')
+        dest.parentFile.mkdirs()
+        println "Downloading BungeeCord ..."
+        new URL(bungeeUrl).withInputStream { i -> dest.withOutputStream { it << i } }
+    }
+}
+task downloadViaVersion {
+    doLast {
+        def dest = file('libs/ViaVersion.jar')
+        dest.parentFile.mkdirs()
+        println "Downloading ViaVersion ..."
+        new URL(viaVUrl).withInputStream { i -> dest.withOutputStream { it << i } }
+    }
+}
+task downloadViaBackwards {
+    doLast {
+        def dest = file('libs/ViaBackwards.jar')
+        dest.parentFile.mkdirs()
+        println "Downloading ViaBackwards ..."
+        new URL(viaBackUrl).withInputStream { i -> dest.withOutputStream { it << i } }
+    }
 }
 
+compileJava.dependsOn downloadBungee, downloadViaVersion, downloadViaBackwards
+
 dependencies {
-    compileOnly 'net.md-5:bungeecord-api:1.12-R0.1-SNAPSHOT'
-    compileOnly 'com.viaversion:viaversion-api:4.9.3'      // or match your actual ViaVersion jar version
-    compileOnly 'com.viaversion:viabackwards-api:4.1.1'    // or match your actual ViaBackwards jar version
+    compileOnly files('libs/BungeeCord.jar')
+    compileOnly files('libs/ViaVersion.jar')
+    compileOnly files('libs/ViaBackwards.jar')
 }
 
 jar {
