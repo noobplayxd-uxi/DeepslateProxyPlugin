@@ -8,11 +8,9 @@ version = '1.0.0'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-// Automatically download a known Java‑8 BungeeCord jar before compiling.
-// This is the exact same file you already have – no uploads, no corruption.
 task downloadBungee {
     doLast {
-        def url = new URL('https://ci.md-5.net/job/BungeeCord/1499/artifact/bootstrap/target/BungeeCord.jar')
+        def url = new URL('https://ci.md-5.net/job/BungeeCord/1522/artifact/bootstrap/target/BungeeCord.jar')
         def dest = file('libs/BungeeCord.jar')
         dest.parentFile.mkdirs()
         println "Downloading BungeeCord from $url ..."
