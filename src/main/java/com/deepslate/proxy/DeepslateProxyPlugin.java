@@ -29,7 +29,7 @@ public class DeepslateProxyPlugin extends Plugin implements Listener {
         getProxy().getPluginManager().registerListener(this, this);
         getLogger().info("DeepslateProxyPlugin enabled – mapping deepslate via ViaVersion");
     }
-
+//Container Events handling for  render
     @EventHandler
     public void onServerConnected(ServerConnectedEvent event) {
         ProxiedPlayer player = event.getPlayer();
