@@ -4,13 +4,21 @@ plugins {
 
 group = 'com.deepslate'
 version = '1.0.0'
+
+// Compile with Java 17, but produce Java 8 bytecode
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.md-5.net/content/repositories/snapshots/' }
+    maven { url 'https://repo.viaversion.com' }
+}
+
 dependencies {
-    compileOnly files('libs/BungeeCord.jar')
-    compileOnly files('libs/ViaVersion.jar')
-    compileOnly files('libs/ViaBackwards.jar')
+    compileOnly 'net.md-5:bungeecord-api:1.12-R0.1-SNAPSHOT'
+    compileOnly 'com.viaversion:viaversion-api:4.9.3'      // matches your ViaVersion jar
+    compileOnly 'com.viaversion:viabackwards-api:4.1.1'    // matches your ViaBackwards jar
 }
 
 jar {
