@@ -4,11 +4,13 @@ plugins {
 
 group = 'com.deepslate'
 version = '1.0.0'
+
+// Compile with JDK 17 (set by workflow), but target Java 8 bytecode
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-// --- Download the three proxy JARs from official sources ---
-def bungeeUrl   = 'https://ci.md-5.net/job/BungeeCord/1499/artifact/bootstrap/target/BungeeCord.jar'
+// --- Automatic download of fresh JARs from stable links ---
+def bungeeUrl   = 'https://ci.md-5.net/job/BungeeCord/1522/artifact/bootstrap/target/BungeeCord.jar'
 def viaVUrl     = 'https://github.com/ViaVersion/ViaVersion/releases/download/4.9.3/ViaVersion-4.9.3.jar'
 def viaBackUrl  = 'https://github.com/ViaVersion/ViaBackwards/releases/download/4.1.1/ViaBackwards-4.1.1.jar'
 
@@ -16,24 +18,29 @@ task downloadBungee {
     doLast {
         def dest = file('libs/BungeeCord.jar')
         dest.parentFile.mkdirs()
-        println "Downloading BungeeCord ..."
+        println "Downloading BungeeCord from $bungeeUrl ..."
         new URL(bungeeUrl).withInputStream { i -> dest.withOutputStream { it << i } }
+        println "BungeeCord downloaded."
     }
 }
+
 task downloadViaVersion {
     doLast {
         def dest = file('libs/ViaVersion.jar')
         dest.parentFile.mkdirs()
-        println "Downloading ViaVersion ..."
+        println "Downloading ViaVersion from $viaVUrl ..."
         new URL(viaVUrl).withInputStream { i -> dest.withOutputStream { it << i } }
+        println "ViaVersion downloaded."
     }
 }
+
 task downloadViaBackwards {
     doLast {
         def dest = file('libs/ViaBackwards.jar')
         dest.parentFile.mkdirs()
-        println "Downloading ViaBackwards ..."
+        println "Downloading ViaBackwards from $viaBackUrl ..."
         new URL(viaBackUrl).withInputStream { i -> dest.withOutputStream { it << i } }
+        println "ViaBackwards downloaded."
     }
 }
 
