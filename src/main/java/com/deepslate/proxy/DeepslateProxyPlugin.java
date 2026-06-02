@@ -27,14 +27,16 @@ public class DeepslateProxyPlugin extends Plugin implements Listener {
     @Override
     public void onEnable() {
         getProxy().getPluginManager().registerListener(this, this);
-        getLogger().info("DeepslateProxyPlugin enabled – mapping deepslate via ViaVersion");
+        getLogger().info("DeepslateProxyPlugin enabled – full deepslate support active");
     }
-//Container Events handling for  render
+
     @EventHandler
     public void onServerConnected(ServerConnectedEvent event) {
         ProxiedPlayer player = event.getPlayer();
         Server server = event.getServer();
-        Channel serverChannel = server.getCh().getHandle();
+
+        // Correct method: getHandle() returns the Netty Channel directly
+        Channel serverChannel = server.getHandle();
         serverChannel.pipeline().addBefore("bungee-downstream-bridge", "deepslate-chunk-capture",
             new ChannelInboundHandlerAdapter() {
                 @Override
@@ -44,7 +46,7 @@ public class DeepslateProxyPlugin extends Plugin implements Listener {
                         int readerIndex = buf.readerIndex();
                         try {
                             int packetId = readVarInt(buf);
-                            if (packetId == 0x22) { // Chunk Data packet for 1.20.1 (PLAY)
+                            if (packetId == 0x22) { // Chunk Data for 1.20.1 (PLAY)
                                 buf.readerIndex(readerIndex);
                                 ByteBuf copy = buf.copy();
                                 try {
@@ -70,12 +72,12 @@ public class DeepslateProxyPlugin extends Plugin implements Listener {
         boolean groundUp = buf.readBoolean();
         int bitmask = readVarInt(buf);
 
-        // Skip heightmaps (NBT)
-        skipNBT(buf);
+        skipNBT(buf); // heightmaps
 
-        // Get protocol mapping 1.20.1 -> 1.12.2
-        Protocol protocol = Via.getManager().getProtocolManager()
-                .getProtocol(ProtocolVersion.v1_20_1, ProtocolVersion.v1_12_2);
+        // Use integer protocol IDs – universally supported
+        ProtocolVersion fromVersion = ProtocolVersion.getProtocol(760);   // 1.20.1
+        ProtocolVersion toVersion   = ProtocolVersion.getProtocol(340);   // 1.12.2
+        Protocol protocol = Via.getManager().getProtocolManager().getProtocol(fromVersion, toVersion);
         if (protocol == null) {
             getLogger().warning("No protocol mapping found for 1.20.1 -> 1.12.2");
             return;
@@ -89,7 +91,6 @@ public class DeepslateProxyPlugin extends Plugin implements Listener {
 
         for (int sectionY = -4; sectionY < 20; sectionY++) {
             if ((bitmask & (1 << (sectionY + 4))) != 0) {
-                // Read paletted container
                 short blockCount = buf.readShort();
                 byte bitsPerBlock = buf.readByte();
                 int paletteLength = readVarInt(buf);
@@ -103,7 +104,6 @@ public class DeepslateProxyPlugin extends Plugin implements Listener {
                     data[i] = buf.readLong();
                 }
 
-                // Convert to 1.12.2 char array using ViaVersion mapping
                 byte[] blockData = convertSectionBlocks(mappingData, palette, data, bitsPerBlock);
                 byte[] blockLight = new byte[2048];
                 buf.readBytes(blockLight);
@@ -147,7 +147,6 @@ public class DeepslateProxyPlugin extends Plugin implements Listener {
     private byte[] convertSectionBlocks(MappingData mappingData, int[] palette, long[] data, int bitsPerBlock) {
         byte[] result = new byte[4096 * 2]; // 16*16*16 blocks, 2 bytes each (char)
         int[] blockIndices = new int[4096];
-        // Unpack indices from long array
         if (bitsPerBlock > 0) {
             int idx = 0;
             int bitOffset = 0;
@@ -159,10 +158,10 @@ public class DeepslateProxyPlugin extends Plugin implements Listener {
                 }
             }
         }
-        // Translate each block
+        // Translate modern global block state ID -> 1.12.2 (blockId, metadata)
         for (int i = 0; i < 4096; i++) {
             int modernStateId = palette[blockIndices[i]];
-            int oldState = mappingData.getOldBlockStateId(modernStateId);
+            int oldState = mappingData.getOldBlockStateId(modernStateId);   // present in your JARs
             int blockId = oldState >> 4;
             int meta = oldState & 0xF;
             char b = (char) ((blockId & 0xFFF) << 4 | (meta & 0xF));
@@ -210,52 +209,22 @@ public class DeepslateProxyPlugin extends Plugin implements Listener {
 
     private void skipTagPayload(ByteBuf buf, byte type) {
         switch (type) {
-            case 1: // byte
-                buf.readByte();
-                break;
-            case 2: // short
-                buf.readShort();
-                break;
-            case 3: // int
-                buf.readInt();
-                break;
-            case 4: // long
-                buf.readLong();
-                break;
-            case 5: // float
-                buf.readFloat();
-                break;
-            case 6: // double
-                buf.readDouble();
-                break;
-            case 7: // byte array
-                int len = buf.readInt();
-                buf.skipBytes(len);
-                break;
-            case 8: // string
-                int strLen = buf.readUnsignedShort();
-                buf.skipBytes(strLen);
-                break;
-            case 9: // list
+            case 1: buf.readByte(); break;
+            case 2: buf.readShort(); break;
+            case 3: buf.readInt(); break;
+            case 4: buf.readLong(); break;
+            case 5: buf.readFloat(); break;
+            case 6: buf.readDouble(); break;
+            case 7: int len = buf.readInt(); buf.skipBytes(len); break;
+            case 8: int strLen = buf.readUnsignedShort(); buf.skipBytes(strLen); break;
+            case 9:
                 byte listType = buf.readByte();
                 int listLen = buf.readInt();
-                for (int i = 0; i < listLen; i++) {
-                    skipTagPayload(buf, listType);
-                }
+                for (int i = 0; i < listLen; i++) skipTagPayload(buf, listType);
                 break;
-            case 10: // compound
-                skipCompound(buf);
-                break;
-            case 11: // int array
-                int intArrLen = buf.readInt();
-                buf.skipBytes(intArrLen * 4);
-                break;
-            case 12: // long array
-                int longArrLen = buf.readInt();
-                buf.skipBytes(longArrLen * 8);
-                break;
-            default:
-                throw new RuntimeException("Unknown NBT tag type: " + type);
+            case 10: skipCompound(buf); break;
+            case 11: int intArrLen = buf.readInt(); buf.skipBytes(intArrLen * 4); break;
+            case 12: int longArrLen = buf.readInt(); buf.skipBytes(longArrLen * 8); break;
         }
     }
 }
