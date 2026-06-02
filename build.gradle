@@ -5,24 +5,11 @@ plugins {
 group = 'com.deepslate'
 version = '1.0.0'
 
-// Ensure the compiler produces Java 8 bytecode
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-// Download a known Java‑8 BungeeCord API snapshot before compiling
-def bungeeApiUrl = 'https://repo.md-5.net/content/repositories/snapshots/net/md-5/bungeecord-api/1.12-R0.1-SNAPSHOT/bungeecord-api-1.12-R0.1-20210706.103300-1.jar'
-
-task downloadBungeeApi {
-    doLast {
-        mkdir 'libs'
-        ant.get(src: bungeeApiUrl, dest: 'libs/bungeecord-api.jar', skipexisting: false)
-    }
-}
-
-compileJava.dependsOn downloadBungeeApi
-
 dependencies {
-    compileOnly files('libs/bungeecord-api.jar')
+    compileOnly files('libs/BungeeCord.jar')
 }
 
 jar {
