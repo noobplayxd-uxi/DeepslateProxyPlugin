@@ -1,24 +1,20 @@
 package com.deepslate.proxy;
 
-import net.md_5.bungee.api.event.*;
+import net.md_5.bungee.api.event.ProxyPingEvent;
 import net.md_5.bungee.api.plugin.*;
-import net.md_5.bungee.protocol.packet.*;
+import net.md_5.bungee.event.EventHandler;
 
 public class DeepslateProxyPlugin extends Plugin implements Listener {
 
     @Override
     public void onEnable() {
         getProxy().getPluginManager().registerListener(this, this);
-        getLogger().info("DeepslateProxyPlugin enabled – full deepslate support active");
+        getLogger().info("DeepslateProxyPlugin enabled – ready for future chunk handling");
     }
 
-    @EventHandler(priority = EventPriority.LOWEST) // Run before ViaBackwards
-    public void onPacketReceive(PacketReceiveEvent event) {
-        if (event.getPacket() instanceof MapChunkPacket) {
-            MapChunkPacket packet = (MapChunkPacket) event.getPacket();
-            getLogger().info("Modern chunk at " + packet.getX() + "," + packet.getZ() +
-                             " bitmask=" + packet.getBitmask());
-            // TODO: Extract lower sections and send via extchunk
-        }
+    @EventHandler
+    public void onPing(ProxyPingEvent event) {
+        // Placeholder – this event is just to ensure the plugin compiles and loads.
+        // We will replace this with actual chunk packet interception later.
     }
 }
